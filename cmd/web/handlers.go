@@ -1,8 +1,9 @@
 package main
 
 import (
-	"log"
+	"fmt"
 	"net/http"
+	"strconv"
 )
 
 func Home(w http.ResponseWriter, r *http.Request) {
@@ -10,11 +11,18 @@ func Home(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	w.Write([]byte("hello lets'go"))
+	w.Write([]byte("hello from Home lets'go"))
 }
 
 func View(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Display a post ..."))
+
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil || id < 1 {
+		http.NotFound(w, r)
+		return
+	}
+
+	fmt.Fprintf(w, "Display a specific letsgo whit ID %d...", id)
 }
 
 func Create(w http.ResponseWriter, r *http.Request) {
@@ -25,15 +33,4 @@ func Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write([]byte("Create a post ..."))
-}
-
-func main() {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", Home)
-	mux.HandleFunc("/letsgo/view", View)
-	mux.HandleFunc("/letsgo/create", Create)
-
-	log.Print("Starting server on :4000")
-	err := http.ListenAndServe(":4000", mux)
-	log.Fatal(err)
 }
