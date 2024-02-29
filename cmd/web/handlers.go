@@ -3,10 +3,10 @@ package main
 import (
 	"errors"
 	"fmt"
-	"html/template"
 	"letsgo/internal/models"
 	"net/http"
 	"strconv"
+	"text/template"
 )
 
 var files = []string{
@@ -21,7 +21,7 @@ func (app *Application) Home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ts, err := template.ParseFiles(files...)
+	/* ts, err := template.ParseFiles(files...)
 	if err != nil {
 		app.ServerError(w, err)
 		return
@@ -30,7 +30,7 @@ func (app *Application) Home(w http.ResponseWriter, r *http.Request) {
 	err = ts.ExecuteTemplate(w, "base", nil)
 	if err != nil {
 		app.ServerError(w, err)
-	}
+	} */
 }
 
 func (app *Application) View(w http.ResponseWriter, r *http.Request) {
@@ -40,7 +40,7 @@ func (app *Application) View(w http.ResponseWriter, r *http.Request) {
 		app.NotFound(w)
 		return
 	}
-	
+
 	snippet, err := app.Snippets.Get(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
@@ -51,7 +51,20 @@ func (app *Application) View(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "%+v", snippet)
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		app.ServerError(w, err)
+		return
+	}
+
+	data := &TemplateData{
+		Snippet: snippet,
+	}
+	
+	err = ts.ExecuteTemplate(w, "base", data)
+	if err != nil {
+		app.ServerError(w, err)
+	}
 }
 
 func (app *Application) Create(w http.ResponseWriter, r *http.Request) {
